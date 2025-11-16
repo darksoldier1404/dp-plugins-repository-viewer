@@ -1,0 +1,54 @@
+name: Build and Publish Windows
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to create release for (e.g., v1.0.0). If empty and you used a tag push, the tag will be used.'
+        required: false
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  build-windows:
+    name: Build and publish Windows installer
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build app and create Windows installer
+        env:
+          CI: true
+        run: |
+          npm run build
+
+      - name: List build output
+        run: dir dist-electron-build
+
+      - name: Create Release & Upload Artifacts
+        # softprops/action-gh-release will create a release and upload files provided
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name || github.event.inputs.tag }}
+          name: ${{ github.ref_name || github.event.inputs.tag }}
+          files: dist-electron-build/*

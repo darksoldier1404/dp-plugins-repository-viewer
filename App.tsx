@@ -5,7 +5,7 @@ import ProjectCard from './components/ProjectCard';
 import ProjectDetail from './components/ProjectDetail';
 import LoadingSpinner from './components/LoadingSpinner';
 import Login from './components/Login';
-import { RefreshIcon, LogoutIcon } from './components/Icons';
+import { LogoutIcon } from './components/Icons';
 
 const ORG_NAME = 'DP-Plugins';
 const EXCLUDED_REPO = 'DPP-Releases';
@@ -53,9 +53,7 @@ const App: React.FC = () => {
         }
     }, [token]);
     
-    useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+    // Data refresh is handled by handleRefresh effect (called once on startup and every 3 hours)
 
     const handleLoginSuccess = (newToken: string) => {
         setError(null); // Clear previous errors on new login attempt
@@ -71,10 +69,17 @@ const App: React.FC = () => {
         clearCache();
     };
     
-    const handleRefresh = () => {
+    const handleRefresh = useCallback(() => {
         clearCache();
         fetchData();
-    };
+    }, [fetchData]);
+
+    // Refresh once on startup and every 3 hours thereafter
+    useEffect(() => {
+        handleRefresh();
+        const intervalId = setInterval(handleRefresh, 3 * 60 * 60 * 1000);
+        return () => clearInterval(intervalId);
+    }, [handleRefresh]);
 
     const handleSelectRepo = (repo: GitHubRepo) => {
         setSelectedRepo(repo);
@@ -86,7 +91,7 @@ const App: React.FC = () => {
     };
 
     if (!token) {
-        return <Login onLoginSuccess={handleLoginSuccess} error={error} />;
+        return <Login onLoginSuccess={handleLoginSuccess} />;
     }
     
     return (
@@ -102,10 +107,6 @@ const App: React.FC = () => {
                 </header>
 
                 <div className="flex justify-center md:justify-end items-center mb-6 gap-4">
-                    <button onClick={handleRefresh} className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors text-sm font-medium">
-                        <RefreshIcon className="w-4 h-4" />
-                        Refresh Data
-                    </button>
                     <button onClick={handleLogout} className="flex items-center gap-2 px-4 py-2 bg-red-800 hover:bg-red-700 rounded-lg transition-colors text-sm font-medium">
                         <LogoutIcon className="w-4 h-4" />
                         Logout
