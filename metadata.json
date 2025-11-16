@@ -1,0 +1,5 @@
+{
+  "name": "DP-Plugins Repository Viewer",
+  "description": "An application to view the latest commit and release information for all active repositories in the DP-Plugins GitHub organization, excluding specific projects.",
+  "requestFramePermissions": []
+}

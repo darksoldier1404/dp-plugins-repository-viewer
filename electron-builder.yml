@@ -1,0 +1,27 @@
+appId: com.dpplugins.viewer
+productName: DP-Plugins Viewer
+directories:
+  output: dist-electron-build
+files:
+  - dist/**/*
+  - dist-electron/main.js
+  - dist-electron/preload.js
+  - package.json
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+mac:
+  category: public.app-category.developer-tools
+dmg:
+  contents:
+    - x: 110
+      y: 150
+    - x: 240
+      y: 150
+      type: link
+      path: /Applications
+linux:
+  target:
+    - AppImage
+    - deb
+  category: Development
