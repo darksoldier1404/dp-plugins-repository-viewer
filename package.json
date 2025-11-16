@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "vite",
     "build:vite": "tsc && vite build",
-    "build": "npm run build:vite && electron-builder"
+    "build": "npm run build:vite && electron-builder --publish never"
   },
   "dependencies": {
     "react": "^18.2.0",
