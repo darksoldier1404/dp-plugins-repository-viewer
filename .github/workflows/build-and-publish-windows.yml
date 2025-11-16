@@ -34,6 +34,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Read package.json version and set env
+        run: |
+          echo "PACKAGE_VERSION=$(node -p \"require('./package.json').version\")" >> $GITHUB_ENV
+        shell: bash
+
       - name: Build app and create Windows installer
         env:
           CI: true
@@ -47,7 +52,7 @@ jobs:
         # Use marvinpinto/action-automatic-releases to generate release notes and upload assets
         uses: marvinpinto/action-automatic-releases@latest
         with:
-          title: ${{ github.ref_name || github.event.inputs.tag }}
+          title: ${{ env.PACKAGE_VERSION }}
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           draft: false
           prerelease: false
