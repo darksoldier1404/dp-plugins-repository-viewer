@@ -46,6 +46,7 @@ Setup notes:
 - The action runs on `windows-latest`. It will run `npm ci` then `npm run build` which uses `electron-builder` to produce `dist-electron-build/DP-Plugins Viewer Setup <version>.exe`.
  - The action runs on `windows-latest`. It will run `npm ci` then `npm run build` which uses `electron-builder` to produce `dist-electron-build/DP-Plugins Viewer Setup <version>.exe`.
  - The workflow reads the package version from `package.json` and uses it as the release title (so the release title reflects the project's version).
+ - The workflow reads the package version from `package.json` and uses it as the release title (so the release title reflects the project's version). If `package.json` does not have a version, it will fall back to the Git tag used to trigger the release.
 - The workflow will create or update a release with the built .exe using the built-in `GITHUB_TOKEN` that Actions exposes.
 - If you want to sign the Windows installer with your code-signing certificate, add `CSC_LINK` and `CSC_KEY_PASSWORD` as secrets and configure `electron-builder` accordingly.
 

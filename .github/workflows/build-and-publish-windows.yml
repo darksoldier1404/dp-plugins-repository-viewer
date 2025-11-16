@@ -34,11 +34,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Read package.json version and set env
-        shell: bash
-        run: |
-          VERSION=$(node -p "require('./package.json').version")
-          echo "PACKAGE_VERSION=$VERSION" >> $GITHUB_ENV
+      - name: Read package.json version and set env (cross-platform)
+        run: node -e "const fs=require('fs'); const v=require('./package.json').version; fs.appendFileSync(process.env.GITHUB_ENV, `PACKAGE_VERSION=${v}\n`);"
 
       - name: Build app and create Windows installer
         env:
@@ -49,11 +46,20 @@ jobs:
       - name: List build output
         run: dir dist-electron-build
 
+      - name: Determine release title
+        shell: bash
+        run: |
+          if [ -z "$PACKAGE_VERSION" ]; then
+            echo "RELEASE_TITLE=${{ github.ref_name || github.event.inputs.tag }}" >> $GITHUB_ENV
+          else
+            echo "RELEASE_TITLE=$PACKAGE_VERSION" >> $GITHUB_ENV
+          fi
+
       - name: Create Release & Upload Artifacts
         # Use marvinpinto/action-automatic-releases to generate release notes and upload assets
         uses: marvinpinto/action-automatic-releases@latest
         with:
-          title: ${{ env.PACKAGE_VERSION }}
+          title: ${{ env.RELEASE_TITLE }}
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           draft: false
           prerelease: false
