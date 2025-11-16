@@ -47,7 +47,7 @@ jobs:
         # Use marvinpinto/action-automatic-releases to generate release notes and upload assets
         uses: marvinpinto/action-automatic-releases@latest
         with:
-          repo_token: ${{ secrets.ACTION_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
           title: ${{ github.ref_name || github.event.inputs.tag }}
           draft: false
           prerelease: false
