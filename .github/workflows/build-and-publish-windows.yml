@@ -44,11 +44,12 @@ jobs:
         run: dir dist-electron-build
 
       - name: Create Release & Upload Artifacts
-        # softprops/action-gh-release will create a release and upload files provided
-        uses: softprops/action-gh-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.ACTION_TOKEN }}
+        # Use marvinpinto/action-automatic-releases to generate release notes and upload assets
+        uses: marvinpinto/action-automatic-releases@latest
         with:
-          tag_name: ${{ github.ref_name || github.event.inputs.tag }}
-          name: ${{ github.ref_name || github.event.inputs.tag }}
-          files: dist-electron-build/*
+          repo_token: ${{ secrets.ACTION_TOKEN }}
+          title: ${{ github.ref_name || github.event.inputs.tag }}
+          draft: false
+          prerelease: false
+          files: |
+            dist-electron-build/*
