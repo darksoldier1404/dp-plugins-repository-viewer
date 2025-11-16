@@ -35,7 +35,8 @@ jobs:
         run: npm ci
 
       - name: Read package.json version and set env (cross-platform)
-        run: node -e "const fs=require('fs'); const v=require('./package.json').version; fs.appendFileSync(process.env.GITHUB_ENV, `PACKAGE_VERSION=${v}\n`);"
+        shell: bash
+        run: node -e 'const fs=require("fs"); const v=require("./package.json").version; fs.appendFileSync(process.env.GITHUB_ENV, "PACKAGE_VERSION=" + v + "\n");'
 
       - name: Build app and create Windows installer
         env:
