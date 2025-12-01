@@ -1,16 +1,19 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { GitHubRepo } from './types';
 import { fetchRepositories, clearCache } from './services/githubService';
 import ProjectCard from './components/ProjectCard';
 import ProjectDetail from './components/ProjectDetail';
 import LoadingSpinner from './components/LoadingSpinner';
 import Login from './components/Login';
-import { LogoutIcon } from './components/Icons';
+import Settings from './components/Settings';
+import { LogoutIcon, SettingsIcon } from './components/Icons';
 
 const ORG_NAME = 'DP-Plugins';
 const EXCLUDED_REPO = 'DPP-Releases';
 
 const App: React.FC = () => {
+    const { t } = useTranslation();
     const [token, setToken] = useState<string | null>(() => localStorage.getItem('github-token'));
     const [repos, setRepos] = useState<GitHubRepo[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
@@ -19,6 +22,7 @@ const App: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [viewMode, setViewMode] = useState<'grid-1' | 'grid-2' | 'grid-3'>(() => (localStorage.getItem('viewMode') as 'grid-1' | 'grid-2' | 'grid-3') || 'grid-3');
     const [currentPage, setCurrentPage] = useState(1);
+    const [showSettings, setShowSettings] = useState(false);
     const itemsPerPage = 9;
 
     const handleLogout = useCallback(() => {
@@ -113,32 +117,36 @@ const App: React.FC = () => {
                 <header className="text-center mb-6">
                     <h1 className="text-4xl md:text-5xl font-extrabold">
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-teal-500">
-                            DP-Plugins Projects
+                            {t('app.title')}
                         </span>
                     </h1>
-                    <p className="text-gray-400 mt-2 text-lg">Latest Commits & Releases Dashboard</p>
+                    <p className="text-gray-400 mt-2 text-lg">{t('app.subtitle')}</p>
                 </header>
 
                 <div className="flex justify-center mb-6">
-                    <input 
-                        type="text" 
-                        placeholder="Search repositories..." 
-                        value={searchQuery} 
-                        onChange={(e) => handleSearchChange(e.target.value)} 
+                    <input
+                        type="text"
+                        placeholder={t('search.placeholder')}
+                        value={searchQuery}
+                        onChange={(e) => handleSearchChange(e.target.value)}
                         className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 w-full max-w-md"
                     />
                 </div>
 
                 <div className="flex justify-center mb-4 space-x-2">
-                    <button onClick={() => handleSetViewMode('grid-1')} className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium ${viewMode === 'grid-1' ? 'bg-cyan-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}>1 Column</button>
-                    <button onClick={() => handleSetViewMode('grid-2')} className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium ${viewMode === 'grid-2' ? 'bg-cyan-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}>2 Columns</button>
-                    <button onClick={() => handleSetViewMode('grid-3')} className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium ${viewMode === 'grid-3' ? 'bg-cyan-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}>3 Columns</button>
+                    <button onClick={() => handleSetViewMode('grid-1')} className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium ${viewMode === 'grid-1' ? 'bg-cyan-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}>{t('viewMode.1Column')}</button>
+                    <button onClick={() => handleSetViewMode('grid-2')} className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium ${viewMode === 'grid-2' ? 'bg-cyan-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}>{t('viewMode.2Columns')}</button>
+                    <button onClick={() => handleSetViewMode('grid-3')} className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium ${viewMode === 'grid-3' ? 'bg-cyan-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}>{t('viewMode.3Columns')}</button>
                 </div>
 
                 <div className="flex justify-center md:justify-end items-center mb-6 gap-4">
+                    <button onClick={() => setShowSettings(true)} className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors text-sm font-medium">
+                        <SettingsIcon className="w-4 h-4" />
+                        {t('settings.title')}
+                    </button>
                     <button onClick={handleLogout} className="flex items-center gap-2 px-4 py-2 bg-red-800 hover:bg-red-700 rounded-lg transition-colors text-sm font-medium">
                         <LogoutIcon className="w-4 h-4" />
-                        Logout
+                        {t('buttons.logout')}
                     </button>
                 </div>
 
@@ -146,7 +154,7 @@ const App: React.FC = () => {
                     {loading && (
                         <div className="flex flex-col items-center justify-center h-64">
                             <LoadingSpinner />
-                            <p className="mt-4 text-lg text-gray-300">Fetching repository data...</p>
+                            <p className="mt-4 text-lg text-gray-300">{t('loading.fetching')}</p>
                         </div>
                     )}
                     {error && (
@@ -188,7 +196,7 @@ const App: React.FC = () => {
                                                         disabled={currentPage === 1}
                                                         className="px-4 py-2 bg-gray-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600 transition-colors text-sm font-medium"
                                                     >
-                                                        Previous
+                                                        {t('buttons.previous')}
                                                     </button>
                                                     {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                                                         <button
@@ -208,7 +216,7 @@ const App: React.FC = () => {
                                                         disabled={currentPage === totalPages}
                                                         className="px-4 py-2 bg-gray-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600 transition-colors text-sm font-medium"
                                                     >
-                                                        Next
+                                                        {t('buttons.next')}
                                                     </button>
                                                 </div>
                                             )}
@@ -219,6 +227,7 @@ const App: React.FC = () => {
                         )
                     )}
                 </main>
+                {showSettings && <Settings onClose={() => setShowSettings(false)} />}
             </div>
         </div>
     );

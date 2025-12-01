@@ -1,8 +1,9 @@
-import { app, BrowserWindow, shell } from 'electron';
+import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 // Fix: Import `process` from `node:process` to ensure the correct type definitions are used, resolving the error on `process.platform`.
 import process from 'node:process';
+import Store from 'electron-store';
 
 // Get the directory name in an ES module context
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -20,6 +21,13 @@ process.env.VITE_PUBLIC = process.env.VITE_DEV_SERVER_URL
   ? path.join(process.env.DIST, '../public')
   : process.env.DIST;
 
+const store = new Store();
+
+// Check hardware acceleration setting
+const hardwareAccelerationEnabled = store.get('hardwareAcceleration', true) as boolean;
+if (!hardwareAccelerationEnabled) {
+  app.disableHardwareAcceleration();
+}
 
 let win: BrowserWindow | null;
 // Use ['ENV_NAME'] avoid vite:define plugin - Vite@2.x
@@ -72,6 +80,12 @@ app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
   }
+});
+
+// IPC handlers
+ipcMain.handle('set-hardware-acceleration', async (event, enabled: boolean) => {
+  store.set('hardwareAcceleration', enabled);
+  // Note: Hardware acceleration change requires app restart
 });
 
 app.whenReady().then(createWindow);

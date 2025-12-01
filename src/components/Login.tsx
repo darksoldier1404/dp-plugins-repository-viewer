@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface LoginProps {
     onLoginSuccess: (token: string) => void;
@@ -6,6 +7,7 @@ interface LoginProps {
 }
 
 const Login: React.FC<LoginProps> = ({ onLoginSuccess, error }) => {
+    const { t } = useTranslation();
     const [token, setToken] = useState('');
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -22,12 +24,12 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, error }) => {
                     <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-teal-500">
                         DP-Plugins Viewer
                     </h1>
-                    <p className="mt-2 text-gray-400">Please log in with a GitHub Personal Access Token.</p>
+                    <p className="mt-2 text-gray-400">{t('login.description')}</p>
                 </div>
                 {error && (
                     <div className="bg-red-900/50 border border-red-700 text-red-300 px-4 py-3 rounded-lg text-center" role="alert" id="error-message">
                         <strong className="font-bold">Error: </strong>
-                        <span className="block sm:inline">{error}</span>
+                        <span className="block sm:inline">{t('login.error')}</span>
                     </div>
                 )}
                 <form className="space-y-6" onSubmit={handleSubmit}>
@@ -44,7 +46,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, error }) => {
                                 value={token}
                                 onChange={(e) => setToken(e.target.value)}
                                 className="w-full px-3 py-2 text-gray-100 bg-gray-900 border border-gray-700 rounded-md shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
-                                placeholder="ghp_..."
+                                placeholder={t('login.tokenPlaceholder')}
                                 aria-describedby={error ? "error-message" : undefined}
                             />
                         </div>
@@ -73,7 +75,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, error }) => {
                             type="submit"
                             className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-cyan-600 hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-cyan-500 transition-all duration-300"
                         >
-                            Login
+                            {t('login.loginButton')}
                         </button>
                     </div>
                 </form>

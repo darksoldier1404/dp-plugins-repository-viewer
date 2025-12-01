@@ -38,3 +38,11 @@ export interface GitHubRelease {
   published_at: string;
   assets: GitHubReleaseAsset[];
 }
+
+declare global {
+  interface Window {
+    electronAPI: {
+      setHardwareAcceleration: (enabled: boolean) => Promise<void>;
+    };
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "app": {
+    "title": "DP-Plugins Projects",
+    "subtitle": "Latest Commits & Releases Dashboard"
+  },
+  "login": {
+    "title": "Login to GitHub",
+    "description": "Enter your GitHub personal access token to access repository data.",
+    "tokenPlaceholder": "Enter your GitHub token",
+    "loginButton": "Login",
+    "error": "Authentication failed. Your GitHub token may be invalid or expired."
+  },
+  "search": {
+    "placeholder": "Search repositories..."
+  },
+  "viewMode": {
+    "1Column": "1 Column",
+    "2Columns": "2 Columns",
+    "3Columns": "3 Columns"
+  },
+  "buttons": {
+    "logout": "Logout",
+    "previous": "Previous",
+    "next": "Next",
+    "back": "Back to List"
+  },
+  "loading": {
+    "fetching": "Fetching repository data..."
+  },
+  "error": {
+    "rateLimit": "GitHub API rate limit exceeded. Authenticated requests have a higher limit. Please check your token or try again later.",
+    "generic": "An unknown error occurred while fetching repository data."
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "hardwareAcceleration": "Hardware Acceleration",
+    "on": "On",
+    "off": "Off",
+    "save": "Save",
+    "cancel": "Cancel"
+  }
+}

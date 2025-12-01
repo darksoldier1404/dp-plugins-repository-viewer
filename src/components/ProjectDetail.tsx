@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { GitHubRepo, GitHubRelease } from '../types';
 import { fetchReadmeHtml, fetchAllReleases } from '../services/githubService';
 import { BackIcon, TagIcon, DownloadIcon, CalendarIcon, ExternalLinkIcon } from './Icons';
@@ -19,6 +20,7 @@ const formatDate = (dateString: string | null): string => {
 };
 
 const ProjectDetail: React.FC<ProjectDetailProps> = ({ repo, onBack }) => {
+    const { t } = useTranslation();
     const [readme, setReadme] = useState<string | null>(null);
     const [releases, setReleases] = useState<GitHubRelease[]>([]);
     const [loading, setLoading] = useState(true);
@@ -57,7 +59,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ repo, onBack }) => {
                 className="inline-flex items-center mb-8 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-cyan-500 transition-colors"
             >
                 <BackIcon className="w-5 h-5 mr-2" />
-                Back to Projects
+                {t('buttons.back')}
             </button>
 
             <header className="mb-8 p-6 bg-gray-800 border border-gray-700 rounded-lg">

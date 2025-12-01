@@ -1,3 +1,5 @@
+import { contextBridge, ipcRenderer } from 'electron';
+
 function domReady(condition: DocumentReadyState[] = ['complete', 'interactive']) {
   return new Promise(resolve => {
     if (condition.includes(document.readyState)) {
@@ -79,3 +81,7 @@ const { appendLoading, removeLoading } = useLoading()
 domReady().then(appendLoading)
 
 window.onload = removeLoading;
+
+contextBridge.exposeInMainWorld('electronAPI', {
+  setHardwareAcceleration: (enabled: boolean) => ipcRenderer.invoke('set-hardware-acceleration', enabled),
+});
