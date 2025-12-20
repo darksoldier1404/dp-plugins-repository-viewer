@@ -46,7 +46,7 @@ function createWindow() {
   });
 
   // Hide the menu bar
-  win.setMenu(null);
+  // win.setMenu(null);
 
   // Open external links in the default browser instead of a new Electron window
   win.webContents.setWindowOpenHandler(({ url }) => {

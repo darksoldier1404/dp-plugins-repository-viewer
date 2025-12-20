@@ -38,6 +38,9 @@
     "on": "켜짐",
     "off": "꺼짐",
     "save": "저장",
-    "cancel": "취소"
+    "cancel": "취소",
+    "bstatsMappingLabel": "bStats 플러그인 매핑 (JSON)",
+    "bstatsMappingHelp": "저장소 이름을 bStats 플러그인 ID에 매핑합니다. 예: {\"DPP-Example\": 1337}",
+    "bstatsLoadExample": "예제 매핑 불러오기"
   }
 }

@@ -38,6 +38,9 @@
     "on": "On",
     "off": "Off",
     "save": "Save",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "bstatsMappingLabel": "bStats plugin mapping (JSON)",
+    "bstatsMappingHelp": "Map repository names to bStats plugin IDs. Example: {\"DPP-Example\": 1337}",
+    "bstatsLoadExample": "Load example mapping"
   }
 }
