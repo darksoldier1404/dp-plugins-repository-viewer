@@ -148,7 +148,7 @@ const GeoMap: React.FC<{ items: Record<string, number> }> = ({ items }) => {
     );
 };
 
-const StatsDetail: React.FC<Props> = ({ repo, pluginId, pluginName, onBack }) => {
+const StatsDetail: React.FC<Props> = ({ pluginId, onBack }) => {
     const [charts, setCharts] = useState<Record<string, any> | null>(null);
     const [chartDataMap, setChartDataMap] = useState<Record<string, any>>({});
     const [loadingMap, setLoadingMap] = useState<Record<string, boolean>>({});
