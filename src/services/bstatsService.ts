@@ -9,7 +9,7 @@ type Plugin = {
     isGlobal: boolean;
 };
 
-type ChartMetadata = {
+export type ChartMetadata = {
     uid: number;
     type: string;
     position: number;
@@ -90,12 +90,12 @@ export const fetchPluginCharts = async (pluginId: number): Promise<Record<string
     return data;
 };
 
-export const fetchChartData = async (pluginId: number, chartId: string, maxElements?: number): Promise<Array<[number, number]>> => {
+export const fetchChartData = async (pluginId: number, chartId: string, maxElements?: number): Promise<any> => {
     const key = `chart-data-${pluginId}-${chartId}-${maxElements || 'all'}`;
-    const cached = cache.get<Array<[number, number]>>(key);
+    const cached = cache.get<any>(key);
     if (cached) return cached;
     const url = `/api/v1/plugins/${pluginId}/charts/${chartId}/data${maxElements ? `?maxElements=${maxElements}` : ''}`;
-    const data = await fetchJson<Array<[number, number]>>(url);
+    const data = await fetchJson<any>(url);
     cache.set(key, data);
     return data;
 };

@@ -1,29 +1,31 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { GitHubRepo } from '../types';
 import { fetchAllPlugins, findPluginByName, findPluginForRepo, fetchPluginCharts, fetchChartData, clearBstatsCache, getManualMapping, testBstatsApi } from '../services/bstatsService';
+import StatsDetail from './StatsDetail';
+import * as echarts from 'echarts';
 
 type Props = { repos: GitHubRepo[] };
 
-const Sparkline: React.FC<{ points: Array<[number, number]> }> = ({ points }) => {
-    if (!points || points.length === 0) return <div className="text-sm text-gray-400">No data</div>;
-    // build simple SVG path
-    const values = points.map(p => p[1]);
-    const min = Math.min(...values);
-    const max = Math.max(...values);
-    const pad = 4;
-    const width = 140;
-    const height = 32;
-    const range = max - min || 1;
-    const scaled = values.map((v, i) => {
-        const x = (i / (values.length - 1 || 1)) * (width - pad * 2) + pad;
-        const y = height - pad - ((v - min) / range) * (height - pad * 2);
-        return `${x},${y}`;
-    });
-    return (
-        <svg width={width} height={height} className="block">
-            <polyline fill="none" stroke="#06b6d4" strokeWidth={2} points={scaled.join(' ')} />
-        </svg>
-    );
+const EChartSparkline: React.FC<{ points: Array<[number, number]> }> = ({ points }) => {
+    const ref = React.useRef<HTMLDivElement | null>(null);
+    const chartRef = React.useRef<echarts.ECharts | null>(null);
+    useEffect(() => {
+        if (!ref.current) return;
+        const chart = echarts.init(ref.current);
+        chartRef.current = chart;
+        const option: echarts.EChartsOption = {
+            tooltip: { trigger: 'axis', formatter: (params: any) => params && params[0] ? `${new Date(params[0].data[0]).toLocaleString()}<br/>${params[0].data[1]}` : '' },
+            grid: { left: 2, right: 2, top: 2, bottom: 2 },
+            xAxis: { type: 'time', show: false },
+            yAxis: { type: 'value', show: false },
+            series: [{ type: 'line', data: points.map(p => [p[0], p[1]]), lineStyle: { color: '#06b6d4', width: 1 }, areaStyle: { color: 'rgba(6,182,212,0.12)' }, showSymbol: false }]
+        };
+        chart.setOption(option);
+        const resize = () => chart.resize();
+        window.addEventListener('resize', resize);
+        return () => { window.removeEventListener('resize', resize); chart.dispose(); chartRef.current = null; };
+    }, [points]);
+    return <div ref={ref} style={{ width: 140, height: 32 }} />;
 };
 
 const StatsTab: React.FC<Props> = ({ repos }) => {
@@ -34,6 +36,7 @@ const StatsTab: React.FC<Props> = ({ repos }) => {
     const [error, setError] = useState<string | null>(null);
     const [testResult, setTestResult] = useState<any>(null);
     const [testing, setTesting] = useState(false);
+    const [selectedDetail, setSelectedDetail] = useState<{ repo: GitHubRepo; pluginId: number; pluginName: string } | null>(null);
 
     const runLookup = useCallback(async () => {
         let mounted = true;
@@ -59,10 +62,11 @@ const StatsTab: React.FC<Props> = ({ repos }) => {
                 setPluginsLoaded(true);
             }
 
-            // Automatically fetch default chart for matched plugins (lightweight: only chart metadata then data)
-            await Promise.all(repos.map(async (repo) => {
+            // Sequentially fetch charts/data for matched plugins to reduce load and avoid bursts
+            for (const repo of repos) {
+                if (!mounted) break;
                 const m = newMatches[repo.id];
-                if (!m) return;
+                if (!m) continue;
                 setLoadingMap(prev => ({ ...prev, [repo.id]: true }));
                 try {
                     const charts = await fetchPluginCharts(m.pluginId);
@@ -81,11 +85,11 @@ const StatsTab: React.FC<Props> = ({ repos }) => {
                         if (mounted) setChartData(prev => ({ ...prev, [repo.id]: data }));
                     }
                 } catch (e) {
-                    // ignore single plugin errors
+                    console.warn('failed to fetch charts/data for', repo.name, e);
                 } finally {
                     setLoadingMap(prev => ({ ...prev, [repo.id]: false }));
                 }
-            }));
+            }
 
         } catch (e: any) {
             console.error('bStats fetch error', e);
@@ -115,6 +119,29 @@ const StatsTab: React.FC<Props> = ({ repos }) => {
         }
     };
 
+    // If a detail view is selected, show it
+    if (selectedDetail) {
+        return (
+            <div>
+                <div className="flex items-center justify-between mb-4">
+                    <div>
+                        <span className="text-xl font-semibold">Statistics — {selectedDetail.repo.name}</span>
+                    </div>
+                </div>
+                <div>
+                    <StatsDetail repo={selectedDetail.repo} pluginId={selectedDetail.pluginId} pluginName={selectedDetail.pluginName} onBack={() => setSelectedDetail(null)} />
+                </div>
+            </div>
+        );
+    }
+
+    // Otherwise show list sorted by latest server count (descending)
+    const sortedRepos = [...repos].sort((a, b) => {
+        const va = chartData[a.id] && chartData[a.id].length ? chartData[a.id][chartData[a.id].length - 1][1] : Number.NEGATIVE_INFINITY;
+        const vb = chartData[b.id] && chartData[b.id].length ? chartData[b.id][chartData[b.id].length - 1][1] : Number.NEGATIVE_INFINITY;
+        return vb - va;
+    });
+
     return (
         <div>
             <div className="flex items-center justify-between mb-4">
@@ -123,6 +150,7 @@ const StatsTab: React.FC<Props> = ({ repos }) => {
                     <button onClick={handleRefresh} className="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-sm">Refresh</button>
                 </div>
             </div>
+
             {error && (
                 <div className="bg-red-900/50 border border-red-700 text-red-300 px-4 py-3 rounded-lg mb-4">
                     <div className="mb-2 font-semibold">{error}</div>
@@ -148,18 +176,27 @@ const StatsTab: React.FC<Props> = ({ repos }) => {
                     </div>
                 </div>
             )}
+
             {!pluginsLoaded ? (
                 <div className="p-4 text-center text-gray-400">Loading bStats plugins metadata…</div>
             ) : (
                 <>
+                    <div className="mb-2 text-sm text-gray-400">Sorted by current server count (descending)</div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {repos.map(repo => {
+                        {sortedRepos.map(repo => {
                             const m = matches[repo.id];
                             const data = chartData[repo.id] || [];
                             const loading = !!loadingMap[repo.id];
                             const latest = data.length ? data[data.length - 1][1] : null;
                             return (
-                                <div key={repo.id} className="bg-gray-800 border border-gray-700 rounded-lg p-4">
+                                <div
+                                    key={repo.id}
+                                    onClick={() => m && setSelectedDetail({ repo, pluginId: m.pluginId, pluginName: m.pluginName })}
+                                    role={m ? 'button' : undefined}
+                                    tabIndex={m ? 0 : undefined}
+                                    onKeyDown={(e) => { if (m && (e.key === 'Enter' || e.key === ' ')) setSelectedDetail({ repo, pluginId: m.pluginId, pluginName: m.pluginName }); }}
+                                    className={`bg-gray-800 border border-gray-700 rounded-lg p-4 ${m ? 'cursor-pointer hover:ring-2 hover:ring-cyan-500' : ''}`}
+                                >
                                     <div className="flex items-start justify-between">
                                         <div>
                                             <div className="font-semibold text-lg">{repo.name}</div>
@@ -187,7 +224,7 @@ const StatsTab: React.FC<Props> = ({ repos }) => {
                                             <div className="text-xl font-bold text-cyan-300">{loading ? '…' : (latest !== null ? latest : '—')}</div>
                                         </div>
                                         <div>
-                                            <Sparkline points={data} />
+                                            <EChartSparkline points={data} />
                                         </div>
                                     </div>
                                 </div>
